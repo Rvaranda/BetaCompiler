@@ -1,5 +1,4 @@
 %{
-#include <vector>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -21,6 +20,7 @@ struct variaveis
 	string tipo;
 	string tk;
 };
+
 static int lastvar = 0;
 static int lastnum = 0;
 string proximo(string nome)
@@ -34,7 +34,7 @@ string proximo(string nome)
 }
 variaveis popular(string s1,string s2,string s3)
 {
-	variaveis val ={s1,s2,s3};
+	variaveis val = {s1,s2,s3};
 	return val;
 }
 
@@ -97,7 +97,7 @@ BLOCO		: '{' COMANDOS '}'
 COMANDOS	: COMANDO COMANDOS
 			{
 
-				$$.traducao = $$.traducao + $2.traducao;
+				$$.traducao = $1.traducao;
 			}
 			|
 			;
@@ -109,7 +109,7 @@ E 			: E '+' E
 			{
 				$$.label = proximo("Aux");
 				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) +$$.label+" = "+ $1.label + " + " + $3.label + ";\n";
-				$$.tipo =$1.tipo;
+				$$.tipo=$1.tipo;
 			}
 			|
 			E '-' E
@@ -124,7 +124,7 @@ E 			: E '+' E
 			{
 				$$.label = proximo("Aux");
 				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) +$$.label+" = "+ $1.label + " * " + $3.label + ";\n";
-				$$.tipo = $1.tipo;
+				$$.tipo=$1.tipo;
 			}
 			|
 			E '/' E
@@ -153,8 +153,6 @@ E 			: E '+' E
 			}
 			| TK_NUM
 			{
-				variaveis s = popular("1","2","3");
-				cout<<s.name;
 				$$.label = proximo("num");
 				$$.tipo = "int";
 				$$.val=$$.traducao;
