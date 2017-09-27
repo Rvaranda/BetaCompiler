@@ -137,6 +137,7 @@ E 			: E '+' E
 			'('E')'
 			{
 				$$.label = $2.label;
+				$$.tipo = $2.tipo;
 				$$.traducao = $2.traducao;
 			}
 			|
