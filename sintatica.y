@@ -1,4 +1,10 @@
 %{
+
+// MALDITO BUG DO NUMERO VOADOR
+// CORRIJA ISSO LOGO
+
+#include <vector>
+#include <map>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -21,8 +27,18 @@ struct variaveis
 	string tk;
 };
 
+map<string, string> var_op =
+{
+	{ "int,int", "int" },
+	{ "int,double", "double" },
+	{ "double,int", "double" },
+	{ "double,double", "double" }
+};
+
+vector<variaveis> variables_to_declare;
 static int lastvar = 0;
 static int lastnum = 0;
+
 string proximo(string nome)
 {
 	string s ("aux");
@@ -32,9 +48,9 @@ string proximo(string nome)
 	nome=="Aux"?lastvar++:lastnum++;
 	return nome+s;
 }
-variaveis popular(string s1,string s2,string s3)
+variaveis popular(string name, string tipo, string tk)
 {
-	variaveis val = {s1,s2,s3};
+	variaveis val = {name, tipo, tk};
 	return val;
 }
 
@@ -48,6 +64,8 @@ string cast(struct atributos *a,struct atributos *b)
 			b->tipo = "double";
 			string s =b->label;
 			b->label = proximo("num");
+			variaveis var = {"", b->tipo, b->label};
+			variables_to_declare.push_back(var);
 			return b->label+" = ("+ b->tipo +") " + s + ";\n\t";
 		}
 		else
@@ -55,9 +73,26 @@ string cast(struct atributos *a,struct atributos *b)
 			a->tipo = "double";
 			string s =a->label;
 			a->label = proximo("num");
+			variaveis var = {"", a->tipo, a->label};
+			variables_to_declare.push_back(var);
 			return a->label+" = ("+ a->tipo +") " + s + ";\n\t";
 		}
 	}
+}
+
+string declareVariables()
+{
+	string s("");
+
+	if (variables_to_declare.size() > 0)
+	{
+		for (int i = 0; i < variables_to_declare.size(); i++)
+		{
+			s += "\t" + variables_to_declare[i].tipo + " " + variables_to_declare[i].tk + ";\n";
+		}
+	}
+
+	return s;
 }
 
 int yylex(void);
@@ -90,16 +125,17 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 BLOCO		: '{' COMANDOS '}'
 			{
-				$$.traducao = $2.traducao;
+				$$.traducao = declareVariables() + "\n" + $2.traducao;
 			}
 			;
 
 COMANDOS	: COMANDO COMANDOS
 			{
-
-				$$.traducao = $1.traducao;
+				string s = $2.traducao;
+				s = (s.find("num") == string::npos || s.find("Aux") == string::npos) ? "":s;
+				$$.traducao = $1.traducao + s;
 			}
-			|
+			| {}
 			;
 
 COMANDO 	: E ';'
@@ -108,67 +144,83 @@ COMANDO 	: E ';'
 E 			: E '+' E
 			{
 				$$.label = proximo("Aux");
-				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) +$$.label+" = "+ $1.label + " + " + $3.label + ";\n";
-				$$.tipo=$1.tipo;
+				$$.tipo = var_op[$1.tipo+","+$3.tipo];
+				
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
+				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) + $$.label+" = "+ $1.label + " + " + $3.label + ";\n";
 			}
-			|
-			E '-' E
+			| E '-' E
 			{
 
 				$$.label = proximo("Aux");
+				$$.tipo = $$.tipo = var_op[$1.tipo+","+$3.tipo];
+
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
 				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) + $$.label+" = "+ $1.label + " - " + $3.label + ";\n";
-				$$.tipo=$1.tipo;
 			}
-			|
-			E '*' E
+			| E '*' E
 			{
 				$$.label = proximo("Aux");
+				$$.tipo = $$.tipo = var_op[$1.tipo+","+$3.tipo];
+
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
 				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) +$$.label+" = "+ $1.label + " * " + $3.label + ";\n";
-				$$.tipo=$1.tipo;
 			}
-			|
-			E '/' E
+			| E '/' E
 			{
 				$$.label = proximo("Aux");
+				$$.tipo = $$.tipo = var_op[$1.tipo+","+$3.tipo];
+
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
 				$$.traducao = $1.traducao + $3.traducao + "\t" + cast(&$1,&$3) +$$.label+" = "+ $1.label + " / " + $3.label + ";\n";
-				$$.tipo=$1.tipo;
 			}
-			|
-			'('E')'
+			| '('E')'
 			{
 				$$.label = $2.label;
 				$$.tipo = $2.tipo;
 				$$.traducao = $2.traducao;
 			}
-			|
-			TK_TIPO_INT TK_ID TK_OP_EQ TK_NUM 
+			| TK_TIPO_INT TK_ID TK_OP_EQ TK_NUM 
 			{
 				$$.label = $2.label;
 				$$.traducao = $2.traducao;
 			}
-			|
-			'-'E
+			| '-'E
 			{
-				$$.label=proximo("num");
-				$$.traducao= $2.traducao+"\t" + proximo("num") + "=" + " -1 * " + $2.label + "\n";
+				$$.label = proximo("num");
+				$$.traducao = $2.traducao+"\t" + proximo("num") + "=" + " -1 * " + $2.label + "\n";
 			}
 			| TK_NUM
 			{
 				$$.label = proximo("num");
 				$$.tipo = "int";
 				$$.val=$$.traducao;
+
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
 				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 			}
-			|
-			TK_REAL
+			| TK_REAL
 			{
 				$$.label = proximo("num");
 				$$.tipo = "double";
 				$$.val=$$.traducao;
+
+				variaveis var = popular("", $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
 				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 			}
-			|
-			TK_LOG_AND
+			| TK_LOG_AND
 			{
 
 			}
