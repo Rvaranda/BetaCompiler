@@ -130,12 +130,13 @@ BLOCO		: '{' COMANDOS '}'
 			;
 
 COMANDOS	: COMANDO COMANDOS
-			{
-				string s = $2.traducao;
-				s = (s.find("num") == string::npos || s.find("Aux") == string::npos) ? "":s;
-				$$.traducao = $1.traducao + s;
+			{ 
+				$$.traducao = $1.traducao + $2.traducao;
 			}
-			| {}
+			|
+			{
+				$$.traducao = "";
+			}
 			;
 
 COMANDO 	: E ';'
@@ -188,10 +189,14 @@ E 			: E '+' E
 				$$.tipo = $2.tipo;
 				$$.traducao = $2.traducao;
 			}
-			| TK_TIPO_INT TK_ID TK_OP_EQ TK_NUM 
+			| TK_ID TK_OP_EQ E 
 			{
-				$$.label = $2.label;
-				$$.traducao = $2.traducao;
+				variaveis var = {$1.label, $3.tipo, proximo("cust")};
+
+				$$.label = var.tk;
+				$$.traducao = $3.traducao + "\t" + $$.label + " = " + $3.label + ";\n";
+
+				variables_to_declare.push_back(var);
 			}
 			| '-'E
 			{
@@ -202,9 +207,9 @@ E 			: E '+' E
 			{
 				$$.label = proximo("num");
 				$$.tipo = "int";
-				$$.val=$$.traducao;
+				$$.val = $$.traducao;
 
-				variaveis var = popular("", $$.tipo, $$.label);
+				variaveis var = popular($$.label, $$.tipo, $$.label);
 				variables_to_declare.push_back(var);
 
 				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
@@ -226,7 +231,14 @@ E 			: E '+' E
 			}
 			| TK_ID
 			{
+				$$.label = proximo("num");
+				$$.tipo = "int";
+				$$.val = $$.traducao;
 
+				variaveis var = popular($$.label, $$.tipo, $$.label);
+				variables_to_declare.push_back(var);
+
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			;
 %%

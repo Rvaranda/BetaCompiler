@@ -26,6 +26,7 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "||"		{return TK_LOG_OR;}
 
+"="			{return TK_OP_EQ;}
 
 "int"		{return TK_TIPO_INT;}
 
