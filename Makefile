@@ -1,7 +1,7 @@
 all: 	
 		clear
-		lex lexica.l
-		yacc -d sintatica.y
-		g++ -std=c++11 -o glf y.tab.c -lfl
+		flex lexica.l
+		bison -d sintatica.y
+		g++ -std=c++11 -o glf sintatica.tab.c -lfl
 
 		./glf < exemplo.foca

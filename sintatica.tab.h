@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_Y_TAB_H_INCLUDED
-# define YY_YY_Y_TAB_H_INCLUDED
+#ifndef YY_YY_SINTATICA_TAB_H_INCLUDED
+# define YY_YY_SINTATICA_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -55,21 +55,19 @@ extern int yydebug;
     TK_LOG_AND = 265,
     TK_LOG_OR = 266,
     TK_CONTROL_IF = 267,
-    TK_OP_EQ = 268
+    TK_OP_EQ = 268,
+    TK_BOOL = 269,
+    TK_TIPO_DOUBLE = 270,
+    TK_CHAR = 271,
+    TK_REL_EQ = 272,
+    TK_REL_NEQ = 273,
+    TK_REL_GT = 274,
+    TK_REL_LT = 275,
+    TK_REL_GE = 276,
+    TK_REL_LE = 277,
+    TK_TIPO = 278
   };
 #endif
-/* Tokens.  */
-#define TK_NUM 258
-#define TK_MAIN 259
-#define TK_ID 260
-#define TK_TIPO_INT 261
-#define TK_REAL 262
-#define TK_FIM 263
-#define TK_ERROR 264
-#define TK_LOG_AND 265
-#define TK_LOG_OR 266
-#define TK_CONTROL_IF 267
-#define TK_OP_EQ 268
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -83,4 +81,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_Y_TAB_H_INCLUDED  */
+#endif /* !YY_YY_SINTATICA_TAB_H_INCLUDED  */
